@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include<math.h>
 #include <iostream>
 
 // The vertex and fragment shaders
@@ -209,7 +210,11 @@ int main()
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        float timeElapsed = glfwGetTime();
+        float green = (sin(timeElapsed)/2.0f) + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "triangleColor");
         glUseProgram(shaderProgram);
+        glUniform4f(vertexColorLocation, 0.0f, green, 0.0f, 1.0f);
         glBindVertexArray(VAO1);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         glBindVertexArray(VAO2);
