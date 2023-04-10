@@ -54,9 +54,14 @@ unsigned int createVAO(const float *vertices, size_t vertices_length, const unsi
     // Copy the arrays into the buffers
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_length, indices, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, vertices_length, vertices, GL_STATIC_DRAW);
+
     // Enable the attrib array to access the vertices
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // For colors
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+    glEnableVertexAttribArray(1);
+
     // Bind the VAO, VBO, and EBO to the ones before this function was called
     glBindVertexArray(old_VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_EBO);
@@ -179,20 +184,12 @@ int main()
     */
     // clang-format off
     float vertices[] = {
-        -0.4f, 0.0f, 0.0,
-        0.4f, 0.0f, 0.0,
-        0.0f, 0.4f, 0.0,
+        // Positions        // colors
+        -0.4f, -0.4f, 0.0,   1.0f, 0.0f, 0.0f,
+         0.4f, -0.4f, 0.0,   0.0f, 1.0f, 0.0f, 
+         0.0f,  0.4f, 0.0,   0.0f, 0.0f, 1.0f
     };
     unsigned int indices[] = {
-        0, 1, 2,
-    };
-
-    float vertices2[] = {
-        -0.4f, -0.8f, 0.0,
-        0.4f, -0.8f, 0.0,
-        0.0f, -0.4f, 0.0,
-    };
-    unsigned int indices2[] = {
         0, 1, 2,
     };
 
