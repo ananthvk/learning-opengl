@@ -200,7 +200,7 @@ int main()
     // clang-format on
 
     unsigned int VAO1 = createVAO(vertices, sizeof(vertices), indices, sizeof(indices));
-    unsigned int VAO2 = createVAO(vertices2, sizeof(vertices2), indices2, sizeof(indices2));
+    //unsigned int VAO2 = createVAO(vertices2, sizeof(vertices2), indices2, sizeof(indices2));
 
     // For wireframe mode
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -211,14 +211,16 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         float timeElapsed = glfwGetTime();
-        float green = (sin(timeElapsed)/2.0f) + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "triangleColor");
+        //float green = (sin(timeElapsed)/2.0f) + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "timeElapsed");
+
         glUseProgram(shaderProgram);
-        glUniform4f(vertexColorLocation, 0.0f, green, 0.0f, 1.0f);
+        //glUniform4f(vertexColorLocation, 0.0f, green, 0.0f, 1.0f);
+        glUniform1f(vertexColorLocation, timeElapsed);
         glBindVertexArray(VAO1);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(VAO2);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        //glBindVertexArray(VAO2);
+        //glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         glfwPollEvents();
         glfwSwapBuffers(window);
     }

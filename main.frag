@@ -2,9 +2,9 @@
 out vec4 FragColor;
   
 in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)  
-uniform vec4 triangleColor;
+uniform float timeElapsed;
 
 void main()
 {
-    FragColor = triangleColor;
+    FragColor = vec4((cos(timeElapsed)/2.0f) + 0.5f, (sin(timeElapsed)/2.0f) + 0.5f, 0.0f, 1.0f);
 } 
