@@ -5,14 +5,14 @@
 // The vertex and fragment shaders
 // Vertex shader specifies how to process the vertices
 // while fragment shader gives the color for each pixel.
-//const char *vertexShaderSource = "#version 330 core\n"
+// const char *vertexShaderSource = "#version 330 core\n"
 //                                 "layout (location = 0) in vec3 aPos;\n"
 //                                 "void main()\n"
 //                                 "{\n"
 //                                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 //                                 "}\0";
 //
-//const char *fragmentShaderSource = "#version 330 core\nout vec4 FragColor;\n\nvoid main()\n{\n    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n} \n";
+// const char *fragmentShaderSource = "#version 330 core\nout vec4 FragColor;\n\nvoid main()\n{\n    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n} \n";
 char *vertexShaderSource = nullptr;
 char *fragmentShaderSource = nullptr;
 
@@ -33,6 +33,36 @@ void processInput(GLFWwindow *window)
     }
 }
 
+unsigned int createVAO(const float *vertices, size_t vertices_length, const unsigned int *indices, size_t indices_length)
+{
+    // Get the current VAO, VBO and EBO ids
+    int old_VAO = 1, old_VBO = 1, old_EBO = 1;
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &old_VBO);
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &old_VAO);
+    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &old_EBO);
+
+    // Create the VAO, and the buffers
+    unsigned int VAO = 1, VBO = 1, EBO = 1;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    // Bind the VAO and the buffers
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // Copy the arrays into the buffers
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_length, indices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices_length, vertices, GL_STATIC_DRAW);
+    // Enable the attrib array to access the vertices
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    // Bind the VAO, VBO, and EBO to the ones before this function was called
+    glBindVertexArray(old_VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_EBO);
+    glBindBuffer(GL_ARRAY_BUFFER, old_VBO);
+    return VAO;
+}
+
 int main()
 {
 
@@ -41,12 +71,12 @@ int main()
     char buffer2[BUFSIZE];
     FILE *fp;
     fp = fopen("main.vert", "r");
-    size_t sz = fread(buffer1, 1, BUFSIZE-1, fp);
+    size_t sz = fread(buffer1, 1, BUFSIZE - 1, fp);
     buffer1[sz] = '\0';
     fclose(fp);
 
     fp = fopen("main.frag", "r");
-    sz = fread(buffer2, 1, BUFSIZE-1, fp);
+    sz = fread(buffer2, 1, BUFSIZE - 1, fp);
     buffer2[sz] = '\0';
     fclose(fp);
 
@@ -133,6 +163,7 @@ int main()
     glUseProgram(shaderProgram);
     // Shader compilation and usage done
 
+    /*
     float vertices[] = {
         0.5f, 0.5f, 0.0f,   // top right
         0.5f, -0.5f, 0.0f,  // bottom right
@@ -144,31 +175,34 @@ int main()
         0, 1, 3, // first triangle
         1, 2, 3  // second triangle
     };
+    */
+    // clang-format off
+    float vertices[] = {
+        -0.4f, 0.0f, 0.0,
+        0.4f, 0.0f, 0.0,
+        0.0f, 0.4f, 0.0,
+    };
+    unsigned int indices[] = {
+        0, 1, 2,
+    };
 
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    float vertices2[] = {
+        -0.4f, -0.8f, 0.0,
+        0.4f, -0.8f, 0.0,
+        0.0f, -0.4f, 0.0,
+    };
+    unsigned int indices2[] = {
+        0, 1, 2,
+    };
 
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
 
+    // clang-format on
 
-    unsigned int VBO = 1;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    int nrAttributes;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-    std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
+    unsigned int VAO1 = createVAO(vertices, sizeof(vertices), indices, sizeof(indices));
+    unsigned int VAO2 = createVAO(vertices2, sizeof(vertices2), indices2, sizeof(indices2));
 
     // For wireframe mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -176,13 +210,10 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        //for(int i = 0; i < 4*3; i++){
-        //    vertices[i] += 0.01;
-        //}
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+        glBindVertexArray(VAO1);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
