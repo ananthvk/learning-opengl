@@ -3,3 +3,4 @@ bin/
 **/*.bin
 not/
 .vscode/
+container.jpg

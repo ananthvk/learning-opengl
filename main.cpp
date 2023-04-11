@@ -1,7 +1,9 @@
+#include <iostream>
+#include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <math.h>
-#include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_img.h"
 #include "shader.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -43,11 +45,17 @@ unsigned int createVAO(const float *vertices, size_t vertices_length, const unsi
     glBufferData(GL_ARRAY_BUFFER, vertices_length, vertices, GL_STATIC_DRAW);
 
     // Enable the attrib array to access the vertices
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    // Vertices
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(0));
+    // Colors
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3 * sizeof(float)));
+    // Textures
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6 * sizeof(float)));
+
+    // Enable the attribute pointers
     glEnableVertexAttribArray(0);
-    // For colors
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     // Bind the VAO, VBO, and EBO to the ones before this function was called
     glBindVertexArray(old_VAO);
@@ -107,14 +115,36 @@ int main()
     */
     // clang-format off
     float vertices[] = {
-        // Positions        // colors
-        -0.4f, -0.4f, 0.0,   1.0f, 1.0f, 0.0f,
-         0.4f, -0.4f, 0.0,   0.0f, 1.0f, 1.0f, 
-         0.0f,  0.4f, 0.0,   1.0f, 0.0f, 1.0f
+        // positions          // colors           // texture coords
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     };
-    unsigned int indices[] = {
+    unsigned int indices [] ={
         0, 1, 2,
+        2, 3, 0
     };
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Load the texture
+    int width, height, nchannels;
+    unsigned char * data = stbi_load("container.jpg", &width, &height, &nchannels, 0);
+    if(!data){
+        std::cerr<<"Unable to load texture. Check if file exists"<<std::endl;
+        glfwTerminate();
+        return 3;
+    }
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
 
     // clang-format on
 
@@ -132,8 +162,9 @@ int main()
         float timeElapsed = glfwGetTime();
         shader.use();
         shader.set_float("timeElapsed", timeElapsed);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO1);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
