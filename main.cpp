@@ -106,14 +106,67 @@ int main()
     };
     */
     // clang-format off
+/*
+For a pyramid
+(±1, 0, 0)
+( 0, ±1, 0)
+( 0, 0, 1)
+*/
+/*
     float vertices[] = {
         // Positions        // colors
         -0.4f, -0.4f, 0.0,   1.0f, 0.0f, 0.0f,
          0.4f, -0.4f, 0.0,   0.0f, 1.0f, 0.0f, 
          0.0f,  0.4f, 0.0,   0.0f, 0.0f, 1.0f
     };
+*/
+    float vertices[] = {
+        // Triangle 1
+        0.0,1.0,0.0, 1.0f, 0.0f, 0.0f,
+        1.0,0.0,0.0, 1.0f, 0.0f, 0.0f,
+
+        -1.0,-1.0,1.0, 0.0f, 1.0f, 0.0f,
+        0.0,1.0,0.0, 0.0f, 1.0f, 0.0f,
+
+        1.0,-1.0,1.0, 0.0f, 0.0f, 1.0f,
+        0.0,0.0,1.0, 0.0f, 0.0f, 1.0f,
+
+        //Triangle 2
+        0.0,1.0,0.0, 1.0f, 0.0f, 0.0f,
+        1.0,0.0,0.0, 1.0f, 0.0f, 0.0f,
+
+        1.0,-1.0,1.0,  0.0f, 1.0f, 0.0f,
+        0.0,0.0,1.0,  0.0f, 1.0f, 0.0f,
+
+        1.0,-1.0,-1.0, 0.0f, 0.0f, 1.0f,
+        0.0,1.0,0.0, 0.0f, 0.0f, 1.0f,
+
+        //Triangle 3
+        0.0,1.0,0.0, 1.0f, 0.0f, 0.0f,
+        1.0,0.0,0.0, 1.0f, 0.0f, 0.0f,
+
+        1.0,-1.0,-1.0,  0.0f, 1.0f, 0.0f,
+        0.0,1.0,0.0,  0.0f, 1.0f, 0.0f,
+
+        -1.0,-1.0,-1.0, 0.0f, 0.0f, 1.0f,
+        0.0,0.0,1.0,    0.0f, 0.0f, 1.0f,
+
+        //Triangle 4
+        0.0,1.0,0.0, 1.0f, 0.0f, 0.0f,
+        1.0,0.0,0.0, 1.0f, 0.0f, 0.0f,
+
+        -1.0,-1.0,-1.0,  0.0f, 1.0f, 0.0f,
+        0.0,0.0,1.0,  0.0f, 1.0f, 0.0f,
+
+        -1.0,-1.0,1.0,0.0f, 0.0f, 1.0f,
+        0.0,1.0,0.0, 0.0f, 0.0f, 1.0f,
+
+    };
     unsigned int indices[] = {
         0, 1, 2,
+        3, 4, 5,
+        6, 7, 8,
+        9, 10, 11
     };
 
     // clang-format on
@@ -122,7 +175,7 @@ int main()
     // unsigned int VAO2 = createVAO(vertices2, sizeof(vertices2), indices2, sizeof(indices2));
 
     // For wireframe mode
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -133,7 +186,7 @@ int main()
         shader.use();
         shader.set_float("timeElapsed", timeElapsed);
         glBindVertexArray(VAO1);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
