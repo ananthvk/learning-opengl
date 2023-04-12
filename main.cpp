@@ -12,6 +12,12 @@
 
 float global_mix = 0.2f;
 float rotateSpeed = 1.0f;
+float cameraX = 0.0f;
+float cameraY = 0.0f;
+float cameraZ = -3.0f;
+float fovAngle = 45.0f;
+float vfx = 800.0f;
+float vfy = 600.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -36,14 +42,72 @@ void processInput(GLFWwindow *window)
     {
         global_mix = std::max(global_mix - 0.01f, 0.0f);
     }
-
+    float mvspeed = 0.5f;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        rotateSpeed += 1;
+        cameraZ += mvspeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cameraX += mvspeed;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        rotateSpeed -= 1;
+        cameraZ -= mvspeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cameraX -= mvspeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        cameraY -= mvspeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+    {
+        cameraY += mvspeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    {
+        fovAngle += mvspeed * 10;
+        std::cout << "fovAngle=" << fovAngle << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+    {
+        fovAngle -= mvspeed * 10;
+        std::cout << "fovAngle=" << fovAngle << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+    {
+        vfx += mvspeed * 10;
+        std::cout << "vfx=" << vfx << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+    {
+        vfx -= mvspeed * 10;
+        std::cout << "vfx=" << vfx << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+    {
+        vfy += mvspeed * 10;
+        std::cout << "vfy=" << vfy << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+    {
+        vfy -= mvspeed * 10;
+        std::cout << "vfy=" << vfy << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        std::cout << "RESET" << std::endl;
+        global_mix = 0.2f;
+        rotateSpeed = 1.0f;
+        cameraX = 0.0f;
+        cameraY = 0.0f;
+        cameraZ = -3.0f;
+        fovAngle = 45.0f;
+        vfx = 800.0f;
+        vfy = 600.0f;
     }
 }
 
@@ -282,17 +346,17 @@ float vertices[] = {
         // glActiveTexture(GL_TEXTURE0);
         // glBindTexture(GL_TEXTURE_2D, texture);
 
-        //glm::mat4 model = glm::mat4(1.0f);
-        // model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        //model = glm::rotate(model, (float)(glfwGetTime() * rotateSpeed) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        // glm::mat4 model = glm::mat4(1.0f);
+        //  model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::rotate(model, (float)(glfwGetTime() * rotateSpeed) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
         glm::mat4 view = glm::mat4(1.0f);
         // note that we're translating the scene in the reverse direction of where we want to move
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
+        // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::translate(view, glm::vec3(cameraX, cameraY, cameraZ));
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
+        // projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(fovAngle), vfx / vfy, 0.1f, 100.0f);
 
         unsigned int viewLocation = glGetUniformLocation(shader.getid(), "view");
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
@@ -303,17 +367,21 @@ float vertices[] = {
         shader.set_float("mixValue", global_mix);
         glBindVertexArray(VAO1);
         // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
-        for(int i = 0; i < 10; i++){
+        // glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (int i = 0; i < 10; i++)
+        {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            model = glm::rotate(model, (float)(glfwGetTime() * rotateSpeed) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+            // Make every 3rd object rotate
+            if (i % 3 == 0)
+            {
+                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+                model = glm::rotate(model, (float)(glfwGetTime() * rotateSpeed) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+            }
             unsigned int modelLocation = glGetUniformLocation(shader.getid(), "model");
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
             glDrawArrays(GL_TRIANGLES, 0, 36);
-
         }
 
         glfwPollEvents();
