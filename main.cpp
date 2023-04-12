@@ -66,6 +66,7 @@ unsigned int createVAO(const float *vertices, size_t vertices_length, const unsi
 
 int main()
 {
+    stbi_set_flip_vertically_on_load(true);  
     // Initialize GLFW
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -126,10 +127,6 @@ int main()
         2, 3, 0
     };
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Load the texture
     int width, height, nchannels;
@@ -139,6 +136,11 @@ int main()
         glfwTerminate();
         return 3;
     }
+    glActiveTexture(GL_TEXTURE0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -146,6 +148,24 @@ int main()
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
 
+    // Load the smiley texture
+    glActiveTexture(GL_TEXTURE1);
+    data = stbi_load("face.png", &width, &height, &nchannels, 0);
+    if(!data){
+        std::cerr<<"Unable to load texture. Check if file exists"<<std::endl;
+        glfwTerminate();
+        return 3;
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    unsigned int smileyTexture;
+    glGenTextures(1, &smileyTexture);
+    glBindTexture(GL_TEXTURE_2D, smileyTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
     // clang-format on
 
     unsigned int VAO1 = createVAO(vertices, sizeof(vertices), indices, sizeof(indices));
@@ -153,6 +173,10 @@ int main()
 
     // For wireframe mode
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    shader.use();
+    //glUniform1i(glGetUniformLocation(shader.getid(), "boxTexture"), 0);
+    shader.set_int("boxTexture", 0);
+    shader.set_int("smileyTexture", 1);
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -161,9 +185,15 @@ int main()
 
         float timeElapsed = glfwGetTime();
         shader.use();
-        //shader.set_float("timeElapsed", timeElapsed);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, smileyTexture);
+
+        //shader.set_float("timeElapsed", timeElapsed);
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO1);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

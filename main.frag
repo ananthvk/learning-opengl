@@ -5,6 +5,7 @@ in vec3 vertexColor;
 in vec2 texCoord;
 //uniform float timeElapsed;
 uniform sampler2D boxTexture;
+uniform sampler2D smileyTexture;
 
 void main()
 {
@@ -13,5 +14,7 @@ void main()
     //op.y *= (sin(timeElapsed + 3*3.1415/2)/2.0f) + 0.5f;
     //op.z *= (sin(timeElapsed + 3.1415/2)/2.0f) + 0.5f;
     //vec4 col = texture(boxTexture, texCoord);
-    FragColor = texture(boxTexture, texCoord);//* op;
+    // Mirror along x axis
+    vec2 mirrored = vec2(-texCoord.x, texCoord.y);
+    FragColor = mix(texture(boxTexture, texCoord), texture(smileyTexture, mirrored), 0.2);//* op;
 } 
