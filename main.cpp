@@ -1,6 +1,9 @@
 #include <iostream>
 #include <math.h>
 #include<algorithm>
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -192,6 +195,8 @@ int main()
     //glUniform1i(glGetUniformLocation(shader.getid(), "boxTexture"), 0);
     shader.set_int("boxTexture", 0);
     shader.set_int("smileyTexture", 1);
+
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -209,8 +214,21 @@ int main()
         //shader.set_float("timeElapsed", timeElapsed);
         //glActiveTexture(GL_TEXTURE0);
         //glBindTexture(GL_TEXTURE_2D, texture);
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        unsigned int transformLocation = glGetUniformLocation(shader.getid(), "transform");
+        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
+
         shader.set_float("mixValue", global_mix);
         glBindVertexArray(VAO1);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // Draw the second box and make it shrink and enlarge with time
+        glm::mat4 transform2 = glm::mat4(1.0f);
+        transform2 = glm::translate(transform2, glm::vec3(-0.5f, 0.5f, 0.0f));
+        transform2 = glm::scale(transform2, glm::vec3(sin(timeElapsed), sin(timeElapsed), 1.0f));
+        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform2));
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
