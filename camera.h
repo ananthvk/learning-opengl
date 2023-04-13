@@ -12,12 +12,15 @@ namespace gl
     public:
         glm::vec3 position;
         glm::vec3 up;
-        glm::vec3 target;
+        //glm::vec3 target;
+        glm::vec3 front;
 
         Camera()
         {
             position = glm::vec3(0.0f, 0.0f, 3.0f);
-            target = glm::vec3(0.0f, 0.0f, 0.0f);
+            //target = glm::vec3(0.0f, 0.0f, 0.0f);
+            front = glm::vec3(0.0f, 0.0f, -1.0f);
+
             // Otherwise do position - target
             // The direction has to be from the targeted point to the camera
             // direction = -glm::normalize(target - position);
@@ -28,7 +31,7 @@ namespace gl
         }
         glm::mat4 get_lookat()
         {
-            return glm::lookAt(position, target, up);
+            return glm::lookAt(position, front + position, up);
         }
     };
 } // namespace  gl

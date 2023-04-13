@@ -20,6 +20,11 @@ float fovAngle = 45.0f;
 float vfx = 800.0f;
 float vfy = 600.0f;
 
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     // Function which is called each time the window is resized
@@ -110,6 +115,16 @@ void processInput(GLFWwindow *window)
         vfx = 800.0f;
         vfy = 600.0f;
     }
+    const float cameraSpeed = 0.05f; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
 }
 
 unsigned int createVAO(const float *vertices, size_t vertices_length)
@@ -356,12 +371,9 @@ float vertices[] = {
         //  note that we're translating the scene in the reverse direction of where we want to move
         //  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         // view = glm::translate(view, glm::vec3(cameraX, cameraY, cameraZ));
-        //glm::mat4 view = camera.get_lookat();
-        const float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
-        glm::mat4 view;
-        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+        // glm::mat4 view = camera.get_lookat();
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
 
         glm::mat4 projection;
         // projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
