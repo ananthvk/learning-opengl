@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_img.h"
-#include "shader.h"
+#include "glpp/glpp.hpp"
 #include "camera.h"
 
 float global_mix = 0.2f;
@@ -19,6 +19,9 @@ float cameraZ = -3.0f;
 float fovAngle = 45.0f;
 float vfx = 800.0f;
 float vfy = 600.0f;
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
+
 
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -35,6 +38,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 
 void processInput(GLFWwindow *window)
 {
+    float cameraSpeed = 2.5f * deltaTime;
+
     // Process keyboard/mouse/etc inputs here
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -115,7 +120,6 @@ void processInput(GLFWwindow *window)
         vfx = 800.0f;
         vfy = 600.0f;
     }
-    const float cameraSpeed = 0.05f; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -203,7 +207,9 @@ int main()
     glViewport(0, 0, 800, 600);
 
     // Initialize the shaders
-    gl::Shader shader("main", "main.vert", "main.frag");
+    glpp::Shader shader;
+    shader.load_from_file("main.vert", "main.frag");
+    shader.set_name("Mainshader");
     // Shader compilation and usage done
 
     /*
@@ -327,9 +333,9 @@ float vertices[] = {
     // For wireframe mode
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     shader.use();
-    // glUniform1i(glGetUniformLocation(shader.getid(), "boxTexture"), 0);
-    shader.set_int("boxTexture", 0);
-    shader.set_int("smileyTexture", 1);
+    // glUniform1i(glGetUniformLocation(shader.get_id(), "boxTexture"), 0);
+    shader.set("boxTexture", 0);
+    shader.set("smileyTexture", 1);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -359,7 +365,7 @@ float vertices[] = {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, smileyTexture);
 
-        // shader.set_float("timeElapsed", timeElapsed);
+        // shader.set("timeElapsed", timeElapsed);
         // glActiveTexture(GL_TEXTURE0);
         // glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -380,13 +386,13 @@ float vertices[] = {
         projection = glm::perspective(glm::radians(fovAngle), vfx / vfy, 0.1f, 100.0f);
         // projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
 
-        unsigned int viewLocation = glGetUniformLocation(shader.getid(), "view");
+        unsigned int viewLocation = glGetUniformLocation(shader.get_id(), "view");
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 
-        unsigned int projectionLocation = glGetUniformLocation(shader.getid(), "projection");
+        unsigned int projectionLocation = glGetUniformLocation(shader.get_id(), "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
-        shader.set_float("mixValue", global_mix);
+        shader.set("mixValue", global_mix);
         glBindVertexArray(VAO1);
         // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         // glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -401,11 +407,13 @@ float vertices[] = {
                 model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
                 model = glm::rotate(model, (float)(glfwGetTime() * rotateSpeed) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
             }
-            unsigned int modelLocation = glGetUniformLocation(shader.getid(), "model");
+            unsigned int modelLocation = glGetUniformLocation(shader.get_id(), "model");
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;  
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
