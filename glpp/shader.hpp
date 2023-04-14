@@ -2,13 +2,12 @@
 #include <iostream>
 #include <string>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 #include <fstream>
-#include "common.h"
+#include "common.hpp"
 
 namespace glpp
 {
@@ -78,7 +77,7 @@ namespace glpp
             glLinkProgram(program);
 
             // Check link status
-            int status;
+            int status = 1 ;
             glGetProgramiv(id, GL_LINK_STATUS, &status);
             if (!status)
             {
