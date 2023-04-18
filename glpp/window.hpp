@@ -5,10 +5,14 @@
 namespace glpp
 {
     // TODO: Make this callback passable through the constructor
+    int gwidth = 0;
+    int gheight = 0;
     void framebuffer_size_callback(GLFWwindow *window, int width, int height)
     {
         // Function which is called each time the window is resized
         glViewport(0, 0, width, height);
+        gwidth = width;
+        gheight = height;
     }
     class Window
     {
@@ -27,8 +31,9 @@ namespace glpp
 #ifdef __APPLE__
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-
-            window = glfwCreateWindow(800, 600, "Hello world", NULL, NULL);
+            gwidth = 800;
+            gheight = 600;
+            window = glfwCreateWindow(gwidth, gheight, "Hello world", NULL, NULL);
             if (window == nullptr)
             {
                 std::cerr << "Unable to create window" << std::endl;
@@ -53,11 +58,32 @@ namespace glpp
             glfwPollEvents();
             glfwSwapBuffers(window);
         }
+        int getwidth()
+        {
+            return gwidth;
+        }
+        int getheight()
+        {
+            return gheight;
+        }
+        int x()
+        {
+            int mx, my;
+            glfwGetWindowPos(window, &mx, &my);
+            return mx;
+        }
+        int y()
+        {
+            int mx, my;
+            glfwGetWindowPos(window, &mx, &my);
+            return my;
+        }
         ~Window()
         {
             glfwTerminate();
         }
-        GLFWwindow* ptr(){
+        GLFWwindow *ptr()
+        {
             return window;
         }
     };
