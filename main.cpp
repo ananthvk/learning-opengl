@@ -8,6 +8,7 @@
 #include "glpp/glpp.hpp"
 #include "vertices.h"
 
+#define KEYPRESSED(win, key) if (glfwGetKey(win, key) == GLFW_PRESS)
 int main()
 {
     glpp::Window window;
@@ -51,7 +52,7 @@ int main()
     cube_positions.emplace_back(glm::vec3(-1.3f, 1.0f, -1.5f));
 
     std::vector<float> rotation_speed;
-    //std::srand(time(NULL));
+    // std::srand(time(NULL));
     std::srand(1007);
     for (const auto &model : cube_positions)
     {
@@ -67,18 +68,35 @@ int main()
         axis_of_rotation.emplace_back(glm::vec3(x, y, z));
     }
 
+    float dt = 1.0f;
+    float previousFrame = 0.0f;
+
     while (!glfwWindowShouldClose(window.ptr()))
     {
-
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if (glfwGetKey(window.ptr(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        KEYPRESSED(window.ptr(), GLFW_KEY_ESCAPE)
         {
             glfwSetWindowShouldClose(window.ptr(), true);
         }
-        float r = 8;
-        camera.vpos().x = r * cos((float)glfwGetTime());
-        camera.vpos().z = r * sin((float)glfwGetTime());
+        KEYPRESSED(window.ptr(), GLFW_KEY_W)
+        {
+            camera.move(glpp::Camera::Direction::FORWARD, dt);
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_A)
+        {
+            camera.move(glpp::Camera::Direction::LEFT, dt);
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_S)
+        {
+            camera.move(glpp::Camera::Direction::BACKWARD, dt);
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_D)
+        {
+            camera.move(glpp::Camera::Direction::RIGHT, dt);
+        }
+        camera.calculate_target_from_face();
+
         shader.use();
         shader.set("view", camera.view());
         shader.set("projection", projection);
@@ -94,5 +112,7 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
         window.update();
+        dt = glfwGetTime() - previousFrame;
+        previousFrame = glfwGetTime();
     }
 }
