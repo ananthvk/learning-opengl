@@ -118,7 +118,7 @@ namespace glpp
             glUniform1i(loc, value);
         }
         // Creates a uniform with the given keyname and sets it to value.
-        void set(const std::string &keyname, glm::mat4 &value)
+        void set(const std::string &keyname, glm::mat4 value)
         {
             unsigned int loc = glGetUniformLocation(id, keyname.c_str());
             glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
