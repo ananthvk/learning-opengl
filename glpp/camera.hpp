@@ -36,7 +36,7 @@ namespace glpp
                    yaw(-90.0f),
                    pitch(0.0f),
                    roll(0.0f),
-                   fps(true),
+                   fps(false),
                    ypos(0.0f),
                    custom_lookat(true)
         {
