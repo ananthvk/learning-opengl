@@ -77,7 +77,7 @@ namespace glpp
             glLinkProgram(program);
 
             // Check link status
-            int status = 1 ;
+            int status = 1;
             glGetProgramiv(id, GL_LINK_STATUS, &status);
             if (!status)
             {
@@ -118,10 +118,15 @@ namespace glpp
             glUniform1i(loc, value);
         }
         // Creates a uniform with the given keyname and sets it to value.
-        void set(const std::string &keyname, glm::mat4 value)
+        void set(const std::string &keyname, const glm::mat4 &value)
         {
             unsigned int loc = glGetUniformLocation(id, keyname.c_str());
             glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+        }
+        void set(const std::string &keyname, const glm::vec3 &value)
+        {
+            unsigned int loc = glGetUniformLocation(id, keyname.c_str());
+            glUniform3fv(loc, 1, glm::value_ptr(value));
         }
         // Returns the id of the current shader program
         unsigned int get_id()
