@@ -140,6 +140,46 @@ int main()
         {
             camera.move(glpp::Camera::Direction::RIGHT, dt);
         }
+        // TODO: Temporary
+        KEYPRESSED(window.ptr(), GLFW_KEY_UP)
+        {
+            camera.froll() += dt * 3.5;
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_DOWN)
+        {
+            camera.froll() -= dt * 3.5;
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_F4)
+        {
+            if (!camera.fps)
+            {
+                camera.ypos = camera.vpos().y;
+                camera.fps = true;
+            }
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_F5)
+        {
+            if (camera.fps)
+            {
+                camera.fps = false;
+            }
+        }
+
+        KEYPRESSED(window.ptr(), GLFW_KEY_F5)
+        {
+            if (!camera.custom_lookat)
+            {
+                camera.custom_lookat = true;
+            }
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_F6)
+        {
+            if (camera.custom_lookat)
+            {
+                camera.custom_lookat = false;
+            }
+        }
+
         KEYPRESSED(window.ptr(), GLFW_KEY_F8)
         {
             glfwSetInputMode(window.ptr(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
