@@ -292,5 +292,6 @@ int main()
         window.update();
         dt = glfwGetTime() - previousFrame;
         previousFrame = glfwGetTime();
+
     }
 }
