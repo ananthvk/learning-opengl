@@ -8,11 +8,16 @@ out vec3 FragPos;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform bool inv;
 
 
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     FragPos = vec3(model * vec4(aPos, 1.0f));
-    Normal = aNormal;
+    // Calculate the normal matrix for non uniform transforms
+    if(inv)
+        Normal = mat3(transpose(inverse(model))) * aNormal;  
+    else
+        Normal = aNormal;
 }

@@ -18,9 +18,8 @@ bool fullscreen = false;
 int windowed_width = 800;
 int windowed_height = 600;
 int windowed_x = 0;
-float specularity = 32;
-float specularStrength = 0.5f;
 int windowed_y = 0;
+bool shouldInvertNormal = true;
 
 void mouse_moved(GLFWwindow *window, double xpos, double ypos)
 {
@@ -85,7 +84,7 @@ int main()
 
     // Create the camera
     glpp::Camera camera;
-    float x = 1.2f;
+    float x = 2.0f;//1.2f;
     std::vector<glm::vec3> cube_positions = {
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(x, 0.0f, 0.0f),
@@ -126,14 +125,19 @@ int main()
 
     //glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
     glm::vec3 lightPos = glm::vec3(0.0f, 3.0f, 0.0f);
+    glm::vec3 lightColor = glm::vec3(0.0f, 1.0f, 1.0f);
+    glm::vec3 objectColor = glm::vec3(0.5f, 0.2f, 1.0f);//glm::vec3(1.0f, 0.5f, 0.31f);
 
     shader.use();
 
     while (!glfwWindowShouldClose(window.ptr()))
     {
-        lightPos.x = 5 * cos(glm::radians(20.0f) * glfwGetTime());
-        lightPos.y = 5 * sin(glm::radians(20.0f) * glfwGetTime());
+        //lightPos.x = 5 * cos(glm::radians(20.0f) * glfwGetTime());
+        //lightPos.y = 5 * sin(glm::radians(20.0f) * glfwGetTime());
         //lightPos.z = 1 * sin(glm::radians(40.0f) * glfwGetTime());
+        lightColor.r = cos(glm::radians(20.0f) * glfwGetTime())/2.0f + 0.5f;
+        lightColor.g = sin(glm::radians(20.0f) * glfwGetTime())/2.0f + 0.5f;
+        lightColor.b = sin(glm::radians(20.0f) * glfwGetTime())/2.0f + 0.5f;
         shader.set("lightPos", lightPos);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -162,11 +166,23 @@ int main()
         {
             camera.froll() += dt * 3.5;
         }
+        KEYPRESSED(window.ptr(), GLFW_KEY_RIGHT)
+        {
+            if(shouldInvertNormal){
+                shouldInvertNormal = false;
+            }
+        }
+        KEYPRESSED(window.ptr(), GLFW_KEY_LEFT)
+        {
+            if(!shouldInvertNormal){
+                shouldInvertNormal = true;
+            }
+        }
         KEYPRESSED(window.ptr(), GLFW_KEY_DOWN)
         {
             camera.froll() -= dt * 3.5;
         }
-        KEYPRESSED(window.ptr(), GLFW_KEY_F4)
+        KEYPRESSED(window.ptr(), GLFW_KEY_F3)
         {
             if (!camera.fps)
             {
@@ -174,7 +190,7 @@ int main()
                 camera.fps = true;
             }
         }
-        KEYPRESSED(window.ptr(), GLFW_KEY_F5)
+        KEYPRESSED(window.ptr(), GLFW_KEY_F4)
         {
             if (camera.fps)
             {
@@ -229,38 +245,6 @@ int main()
                 fullscreen = false;
             }
         }
-        KEYPRESSED(window.ptr(), GLFW_KEY_O)
-        {
-            specularity += 2;
-            std::cout << "spec: " << specularity << std::endl;
-        }
-        KEYPRESSED(window.ptr(), GLFW_KEY_I)
-        {
-            specularity -= 2;
-            if (specularity < 0)
-            {
-                specularity = 0;
-            }
-            std::cout << "spec: " << specularity << std::endl;
-        }
-        KEYPRESSED(window.ptr(), GLFW_KEY_K)
-        {
-            specularStrength += 0.01;
-            if (specularStrength > 1)
-            {
-                specularStrength = 1;
-            }
-            std::cout << "spec strength: " << specularStrength << std::endl;
-        }
-        KEYPRESSED(window.ptr(), GLFW_KEY_L)
-        {
-            specularStrength -= 0.01;
-            if (specularStrength < 0)
-            {
-                specularStrength = 0;
-            }
-            std::cout << "spec strength: " << specularStrength << std::endl;
-        }
         glm::mat4 projection = glm::perspective(glm::radians((float)fov), (float)window.getwidth() / (float)window.getheight(), 0.1f, 100.0f);
 
         float yaw = camera.fyaw();
@@ -282,6 +266,7 @@ int main()
         lighting_shader.set("projection", projection);
         lighting_shader.set("view", camera.view());
         lighting_shader.set("model", light_model);
+        lighting_shader.set("lightColor", lightColor);
 
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -289,18 +274,17 @@ int main()
         shader.use();
         shader.set("view", camera.view());
         shader.set("projection", projection);
-        shader.set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-        shader.set("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.set("objectColor", objectColor);
+        shader.set("lightColor", lightColor);
         shader.set("viewPos", camera.vpos());
-        shader.set("specularity", specularity);
-        shader.set("specularStrength", specularStrength);
+        shader.set("inv", shouldInvertNormal);
         texture.activate(0);
         glBindVertexArray(VAO);
 
         for(const auto& position: cube_positions){
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, position);
-            // model = glm::rotate(model, (float)glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.3f));
+            model = glm::rotate(model, (float)glfwGetTime() * (float)glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             shader.set("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
